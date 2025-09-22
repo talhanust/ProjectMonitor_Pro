@@ -1,0 +1,50 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    /* Backend Specific Settings */
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    
+    /* Output */
+    "outDir": "./dist",
+    "rootDir": "./src",
+    
+    /* Path Mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@controllers/*": ["./src/controllers/*"],
+      "@services/*": ["./src/services/*"],
+      "@models/*": ["./src/models/*"],
+      "@middleware/*": ["./src/middleware/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@types/*": ["./src/types/*"],
+      "@config/*": ["./src/config/*"],
+      "@routes/*": ["./src/routes/*"],
+      "@validators/*": ["./src/validators/*"]
+    },
+    
+    /* Node.js specific */
+    "types": ["node"],
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "src/**/*",
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ],
+  "references": [
+    { "path": "../../../packages/shared" }
+  ]
+}
