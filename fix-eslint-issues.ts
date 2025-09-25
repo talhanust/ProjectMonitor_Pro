@@ -45,7 +45,10 @@ if (fs.existsSync(frontendFile)) {
     frontendCode = frontendCode.replace(
       /fetch\([^)]*counter\/increment[^)]*\{([\s\S]*?)\})/,
       (match) =>
-        match.replace(/headers:\s*\{[^}]*\}/, (headers) => `${headers},\n  body: JSON.stringify({})`),
+        match.replace(
+          /headers:\s*\{[^}]*\}/,
+          (headers) => `${headers},\n  body: JSON.stringify({})`,
+        ),
     );
     fs.writeFileSync(frontendFile, frontendCode, 'utf8');
     console.log('✅ Frontend request body patch applied');
