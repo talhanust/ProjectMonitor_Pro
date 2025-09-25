@@ -24,6 +24,7 @@ async function incrementCounter() {
   try {
     console.log(`🔄 Sending increment request to: ${BACKEND_URL}/counter/increment`);
 
+    // First, check if server is ready
     const isReady = await waitForServer();
     if (!isReady) {
       throw new Error('Server is not running. Please start the backend with: npm run dev:backend');
@@ -46,9 +47,11 @@ async function incrementCounter() {
     const data = await res.json();
     console.log(`✅ Counter incremented successfully: ${data.count}`);
     return data;
-  } catch (err) {
-    if (err.code === 'ECONNREFUSED') {
-      console.error(`
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      const typedErr = err as Error & { code?: string };
+      if (typedErr.code === 'ECONNREFUSED') {
+        console.error(`
 ❌ Backend server is not running!
 
 Please start the backend server first:
@@ -57,8 +60,11 @@ Please start the backend server first:
 3. Wait for "Server running at http://localhost:8080"
 4. Then run this script again
 `);
+      } else {
+        console.error(`❌ Failed to increment counter:`, typedErr.message);
+      }
     } else {
-      console.error(`❌ Failed to increment counter:`, err.message);
+      console.error('❌ Unknown error occurred:', err);
     }
     throw err;
   }
@@ -67,4 +73,4 @@ Please start the backend server first:
 // Test the function
 incrementCounter()
   .then((data) => console.log('🎉 Final result:', data))
-  .catch((err) => console.error('💥 Final error:', err.message));
+  .catch((err) => console.error('💥 Final error:', err instanceof Error ? err.message : err));

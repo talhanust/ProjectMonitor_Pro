@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 console.log('🔧 Fixing backend parser and frontend request...');
 
@@ -13,10 +12,9 @@ let backendCode = fs.readFileSync(backendFile, 'utf8');
 if (!backendCode.includes("app.addContentTypeParser('application/json'")) {
   backendCode = backendCode.replace(
     /const\s+app\s*=\s*fastify\([^)]*\);/,
-    (match) =>
-      `${match}
+    (match) => `${match}
 
-// Added by fix-counter-body.js
+// Added by fix-counter-body.ts
 app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, done) => {
   try {
     const json = body.length === 0 ? {} : JSON.parse(body);
@@ -38,7 +36,7 @@ app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, body, 
 let frontendCode = fs.readFileSync(frontendFile, 'utf8');
 if (frontendCode.includes('fetch(') && !frontendCode.includes('JSON.stringify({})')) {
   frontendCode = frontendCode.replace(
-    /fetch\([^)]*counter\/increment[^)]*\{([\s\S]*?)\}\)/,
+    /fetch\([^)]*counter\/increment[^)]*\{([\s\S]*?)\})/,
     (match) =>
       match.replace(/headers:\s*\{[^}]*\}/, (headers) => `${headers},\n  body: JSON.stringify({})`),
   );
