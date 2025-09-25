@@ -29,13 +29,17 @@
     }
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsc",
     "dev": "tsup --watch",
     "test": "vitest",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "clean": "rimraf dist node_modules .turbo"
+    "clean": "rimraf dist node_modules",
+    "test:watch": "vitest",
+    "lint:fix": "eslint . --ext ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\"",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "zod": "^3.22.4"
