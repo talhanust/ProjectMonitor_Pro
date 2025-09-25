@@ -9,7 +9,7 @@ async function waitForServer(maxAttempts = 10, delay = 1000) {
         console.log('✅ Server is ready!');
         return true;
       }
-    } catch (err) {
+    } catch {
       console.log(`⏳ Server not ready yet, waiting ${delay}ms...`);
       if (attempt === maxAttempts) {
         console.error('❌ Server never became ready');
@@ -47,9 +47,11 @@ async function incrementCounter() {
     const data = await res.json();
     console.log(`✅ Counter incremented successfully: ${data.count}`);
     return data;
-  } catch (err) {
-    if (err.code === 'ECONNREFUSED') {
-      console.error(`
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      const typedErr = err as Error & { code?: string };
+      if (typedErr.code === 'ECONNREFUSED') {
+        console.error(`
 ❌ Backend server is not running!
 
 Please start the backend server first:
@@ -58,8 +60,11 @@ Please start the backend server first:
 3. Wait for "Server running at http://localhost:8080"
 4. Then run this script again
 `);
+      } else {
+        console.error(`❌ Failed to increment counter:`, typedErr.message);
+      }
     } else {
-      console.error(`❌ Failed to increment counter:`, err.message);
+      console.error('❌ Unknown error occurred:', err);
     }
     throw err;
   }
@@ -68,4 +73,4 @@ Please start the backend server first:
 // Test the function
 incrementCounter()
   .then((data) => console.log('🎉 Final result:', data))
-  .catch((err) => console.error('💥 Final error:', err.message));
+  .catch((err) => console.error('💥 Final error:', err instanceof Error ? err.message : err));

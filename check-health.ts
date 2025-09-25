@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-
-const { execSync } = require('child_process');
-const fs = require('fs');
+import { execSync } from 'child_process';
 
 console.log('🏥 Running Project Health Check...\n');
 
@@ -34,7 +32,7 @@ checks.forEach((check) => {
   try {
     const result = execSync(check.command, { encoding: 'utf8' }).trim();
     console.log(`✅ ${check.name}: ${result}`);
-  } catch (error) {
+  } catch {
     console.log(`❌ ${check.name}: Failed (expected: ${check.expected})`);
     allPassed = false;
   }
@@ -44,12 +42,13 @@ checks.forEach((check) => {
 try {
   const auditResult = execSync('npm audit --json', { encoding: 'utf8' });
   const audit = JSON.parse(auditResult);
-  if (audit.metadata.vulnerabilities.total === 0) {
+  const totalVulns = audit.metadata?.vulnerabilities?.total ?? 0;
+  if (totalVulns === 0) {
     console.log('✅ Security: No vulnerabilities');
   } else {
-    console.log(`⚠️ Security: ${audit.metadata.vulnerabilities.total} vulnerabilities found`);
+    console.log(`⚠️ Security: ${totalVulns} vulnerabilities found`);
   }
-} catch (error) {
+} catch {
   console.log('⚠️ Security: Could not run audit');
 }
 
