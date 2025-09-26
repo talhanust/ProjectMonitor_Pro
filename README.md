@@ -31,33 +31,28 @@ engineering-app-monorepo/
 ### Installation
 
 1. Clone the repository:
-
 ```bash
 git clone <repository-url>
 cd engineering-app-monorepo
 ```
 
 2. Set the correct Node version:
-
 ```bash
 nvm use
 ```
 
 3. Install dependencies:
-
 ```bash
 npm install
 ```
 
 4. Set up environment variables:
-
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
 ```
 
 5. Initialize the database (if using Prisma):
-
 ```bash
 npm run migrate -w @backend/api
 ```
@@ -65,13 +60,11 @@ npm run migrate -w @backend/api
 ### Development
 
 Run all services in development mode:
-
 ```bash
 npm run dev
 ```
 
 Or run individual services:
-
 ```bash
 # Frontend only
 npm run dev:frontend
@@ -83,7 +76,6 @@ npm run dev:backend
 ## 📦 Workspace Structure
 
 ### Frontend (`/frontend`)
-
 - **Framework**: React 18 with TypeScript
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS
@@ -94,7 +86,6 @@ npm run dev:backend
 - **Testing**: Vitest + React Testing Library
 
 ### Backend API (`/backend/services/api`)
-
 - **Framework**: Fastify
 - **Language**: TypeScript
 - **Database**: Prisma ORM
@@ -105,7 +96,6 @@ npm run dev:backend
 - **Testing**: Vitest
 
 ### Shared Packages (`/packages/*`)
-
 - **shared**: Common types, utilities, and constants
 - **ui**: Reusable UI components (planned)
 - **config**: Shared configuration (planned)
@@ -114,20 +104,19 @@ npm run dev:backend
 
 ### Root Level Commands
 
-| Command             | Description                                |
-| ------------------- | ------------------------------------------ |
-| `npm run dev`       | Start all services in development mode     |
-| `npm run build`     | Build all packages for production          |
-| `npm run test`      | Run tests across all workspaces            |
-| `npm run lint`      | Lint all workspaces                        |
-| `npm run format`    | Format code with Prettier                  |
-| `npm run typecheck` | Type check all TypeScript files            |
-| `npm run clean`     | Clean all build artifacts and node_modules |
+| Command | Description |
+|---------|------------|
+| `npm run dev` | Start all services in development mode |
+| `npm run build` | Build all packages for production |
+| `npm run test` | Run tests across all workspaces |
+| `npm run lint` | Lint all workspaces |
+| `npm run format` | Format code with Prettier |
+| `npm run typecheck` | Type check all TypeScript files |
+| `npm run clean` | Clean all build artifacts and node_modules |
 
 ### Workspace-Specific Commands
 
 Run commands in specific workspaces:
-
 ```bash
 # Frontend commands
 npm run dev -w frontend
@@ -149,7 +138,6 @@ The monorepo uses a base TypeScript configuration (`tsconfig.base.json`) that is
 ### Path Aliases
 
 Path aliases are configured for cleaner imports:
-
 - Frontend: `@/`, `@components/`, `@hooks/`, etc.
 - Backend: `@/`, `@controllers/`, `@services/`, etc.
 - Shared: `@shared/`, `@packages/`
@@ -157,7 +145,6 @@ Path aliases are configured for cleaner imports:
 ### Environment Variables
 
 Create `.env` files for environment-specific configuration:
-
 - `.env` - Default/development environment
 - `.env.local` - Local overrides (git ignored)
 - `.env.production` - Production environment
@@ -222,7 +209,6 @@ Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting P
 ## 🆘 Support
 
 For issues and questions:
-
 - Create an issue in the repository
 - Check existing documentation
 - Contact the development team
