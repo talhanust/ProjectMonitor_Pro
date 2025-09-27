@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Status } from '@prisma/client';
 import { config } from '../src/config/env'; // ✅ central env loader
 
 const prisma = new PrismaClient();
@@ -13,6 +13,7 @@ async function main() {
     create: {
       email: 'alice@example.com',
       name: 'Alice',
+      password: 'password123', // 👈 required by schema
     },
   });
 
@@ -22,23 +23,26 @@ async function main() {
     create: {
       email: 'bob@example.com',
       name: 'Bob',
+      password: 'password123',
     },
   });
 
-  // Seed Projects (assign to users)
+  // Seed Projects (assign to users with unique codes)
   await prisma.project.createMany({
     data: [
       {
-        name: 'Monitoring App',
+        code: 'PRJ001', // 👈 required unique code
+        title: 'Monitoring App',
         description: 'First project for testing',
-        status: 'active',
-        ownerId: alice.id, // 👈 assigned to Alice
+        status: Status.ACTIVE,
+        userId: alice.id, // 👈 assigned to Alice
       },
       {
-        name: 'Backend API',
+        code: 'PRJ002',
+        title: 'Backend API',
         description: 'Service for handling requests',
-        status: 'pending',
-        ownerId: bob.id, // 👈 assigned to Bob
+        status: Status.ACTIVE,
+        userId: bob.id, // 👈 assigned to Bob
       },
     ],
     skipDuplicates: true,
