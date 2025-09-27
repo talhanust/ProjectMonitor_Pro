@@ -1,33 +1,53 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import { config } from './config';
-import { setupRoutes } from './routes';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
+import { config } from './config/env';
+import { logger } from './utils/logger';
 
 const server = Fastify({
-  logger: {
-    level: process.env['LOG_LEVEL'] || 'info',
-    transport: {
-      target: 'pino-pretty',
-    },
-  },
+  logger,
 });
 
-async function start() {
+async function bootstrap() {
   try {
+    // Register plugins
+    await server.register(helmet);
     await server.register(cors, {
-      origin: true,
+      origin: config.CORS_ORIGIN,
+      credentials: true,
+    });
+    await server.register(rateLimit, {
+      max: 100,
+      timeWindow: '1 minute',
     });
 
-    setupRoutes(server);
+    // Health check route
+    server.get('/health', async () => {
+      return {
+        status: 'ok',
+        service: 'backend-api',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+      };
+    });
 
-    const port = config.PORT || 8080;
-    await server.listen({ port, host: '0.0.0.0' });
+    // API routes
+    server.get('/api/v1/status', async () => {
+      return {
+        message: 'Engineering Platform API',
+        version: '1.0.0',
+        environment: config.NODE_ENV,
+      };
+    });
 
-    console.log(`Server running at http://localhost:${port}`);
+    // Start server
+    await server.listen({ port: config.PORT, host: '0.0.0.0' });
+    console.log(`Server running at http://localhost:${config.PORT}`);
   } catch (err) {
     server.log.error(err);
     process.exit(1);
   }
 }
 
-start();
+bootstrap();

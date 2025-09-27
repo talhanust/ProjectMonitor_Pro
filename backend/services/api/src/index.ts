@@ -6,7 +6,7 @@ import { config } from './config/env';
 import { logger } from './utils/logger';
 
 const server = Fastify({
-  logger,
+logger: logger as unknown as import('fastify').FastifyBaseLogger,
 });
 
 async function bootstrap() {

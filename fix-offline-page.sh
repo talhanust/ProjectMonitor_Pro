@@ -1,3 +1,15 @@
+#!/bin/bash
+
+# Fix Next.js offline page for Client Component
+FRONTEND_DIR="./frontend/app/offline"
+
+echo "🛠 Fixing /offline/page.tsx for Client Component..."
+
+# Backup original file
+cp "$FRONTEND_DIR/page.tsx" "$FRONTEND_DIR/page.tsx.bak"
+
+# Replace content with client-compatible version
+cat > "$FRONTEND_DIR/page.tsx" << 'EOF'
 'use client';
 
 import React from 'react';
@@ -26,3 +38,8 @@ export default function OfflinePage() {
     </div>
   );
 }
+EOF
+
+echo "✅ /offline/page.tsx updated to Client Component. Original file backed up as page.tsx.bak"
+
+echo "Now run: npm run build inside frontend to rebuild."
