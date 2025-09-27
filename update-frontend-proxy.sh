@@ -1,3 +1,10 @@
+#!/bin/bash
+# update-frontend-proxy.sh
+# This script updates frontend/next.config.js to proxy API requests to the new API Gateway
+
+CONFIG_FILE="frontend/next.config.js"
+
+cat > $CONFIG_FILE << 'EOF'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -32,3 +39,6 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
+EOF
+
+echo "✅ Frontend proxy updated successfully in $CONFIG_FILE"
