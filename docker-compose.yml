@@ -1,17 +1,54 @@
-version: '3.9'
+version: '3.8'
+
 services:
-  db:
-    image: postgres:15
-    container_name: project_monitor_db
-    restart: always
-    ports:
-      - '5432:5432'
+  postgres:
+    image: postgres:15-alpine
+    container_name: engineering_postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: project_monitor_pro
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-engineering_app}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./backend/services/shared/database/migrations:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: engineering_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    container_name: engineering_adminer
+    restart: unless-stopped
+    ports:
+      - 8090:8080
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: engineering_network

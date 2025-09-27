@@ -20,12 +20,14 @@ model User {
 
 model Project {
   id          String   @id @default(cuid())
+  code        String   @unique                // 👈 Unique project code like PROJ001
+  title       String
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   userId      String
-  title       String
   status      Status   @default(ACTIVE)
+
   user        User     @relation(fields: [userId], references: [id])
 }
 
