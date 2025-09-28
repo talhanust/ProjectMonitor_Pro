@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id                String    @id @default(cuid())
+  projectId         String    @unique // DIR-YYYY-XXXX format
+  name              String
+  description       String?
+  status            String    @default("PLANNING")
+  priority          String    @default("MEDIUM")
+  budget            Float?
+  startDate         DateTime?
+  endDate           DateTime?
+  actualStartDate   DateTime?
+  actualEndDate     DateTime?
+  progress          Int       @default(0)
+  
+  // Location
+  location          String?
+  gpsLatitude       Float?
+  gpsLongitude      Float?
+  
+  // People
+  projectManager    String?
+  teamMembers       String[]  @default([])
+  stakeholders      String[]  @default([])
+  
+  // Additional fields
+  tags              String[]  @default([])
+  attachments       String[]  @default([])
+  risks             Json?
+  milestones        Json?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("projects")
+}
+
+model ProjectCounter {
+  id        String   @id @default(cuid())
+  year      Int
+  counter   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([year])
+  @@map("project_counters")
+}

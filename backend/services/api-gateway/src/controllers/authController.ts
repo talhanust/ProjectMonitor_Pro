@@ -1,7 +1,10 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
+import { PrismaClient } from '@prisma/client'
 import { UnauthorizedError, ConflictError, ValidationError } from '../middleware/errorHandler'
+
+const prisma = new PrismaClient()
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -18,82 +21,132 @@ const registerSchema = z.object({
 })
 
 export class AuthController {
-  // Simplified register without Supabase for now
   async register(request: FastifyRequest, reply: FastifyReply) {
     const body = registerSchema.parse(request.body)
     
     try {
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: body.email }
+      })
+      
+      if (existingUser) {
+        throw new ConflictError('User already exists')
+      }
+      
       // Hash password
       const hashedPassword = await bcrypt.hash(body.password, 10)
       
-      // For now, just return mock data
-      // In production, save to database
-      const userId = 'user-' + Date.now()
-      
-      // Generate token
-      const token = await reply.jwtSign({
-        id: userId,
-        email: body.email,
-        name: body.name,
-        role: 'USER',
-      })
-      
-      return {
-        user: {
-          id: userId,
+      // Create user in database
+      const user = await prisma.user.create({
+        data: {
           email: body.email,
+          password: hashedPassword,
           name: body.name,
           role: 'USER',
         },
-        accessToken: token,
-        refreshToken: token, // In production, generate separate refresh token
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        }
+      })
+      
+      // Generate tokens
+      const accessToken = await reply.jwtSign({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      })
+      
+      const refreshToken = await reply.jwtSign(
+        {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+        { expiresIn: '7d' }
+      )
+      
+      return {
+        user,
+        accessToken,
+        refreshToken,
       }
     } catch (error: any) {
+      if (error instanceof ConflictError) throw error
       throw new ValidationError(error.message || 'Registration failed')
     }
   }
   
-  // Simplified login
   async login(request: FastifyRequest, reply: FastifyReply) {
     const body = loginSchema.parse(request.body)
     
     try {
-      // For demo purposes, accept any valid email/password
-      // In production, verify against database
-      
-      const userId = 'user-' + Date.now()
-      const name = body.email.split('@')[0].charAt(0).toUpperCase() + body.email.split('@')[0].slice(1)
-      
-      // Generate token
-      const token = await reply.jwtSign({
-        id: userId,
-        email: body.email,
-        name,
-        role: 'USER',
+      // Find user in database
+      const user = await prisma.user.findUnique({
+        where: { email: body.email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          password: true,
+        }
       })
       
-      return {
-        user: {
-          id: userId,
-          email: body.email,
-          name,
-          role: 'USER',
+      if (!user) {
+        throw new UnauthorizedError('Invalid credentials')
+      }
+      
+      // Verify password
+      const validPassword = await bcrypt.compare(body.password, user.password)
+      
+      if (!validPassword) {
+        throw new UnauthorizedError('Invalid credentials')
+      }
+      
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user
+      
+      // Generate tokens
+      const accessToken = await reply.jwtSign({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      })
+      
+      const refreshToken = await reply.jwtSign(
+        {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
         },
-        accessToken: token,
-        refreshToken: token,
+        { expiresIn: '7d' }
+      )
+      
+      return {
+        user: userWithoutPassword,
+        accessToken,
+        refreshToken,
       }
     } catch (error: any) {
-      throw new UnauthorizedError(error.message || 'Login failed')
+      if (error instanceof UnauthorizedError) throw error
+      throw new UnauthorizedError('Login failed')
     }
   }
   
-  // Logout
   async logout(request: FastifyRequest, reply: FastifyReply) {
-    // In production, invalidate token in database/cache
+    // In production, you might want to blacklist the token
+    // For now, just return success
     return { message: 'Logged out successfully' }
   }
   
-  // Refresh token - FIXED VERSION
   async refreshToken(request: FastifyRequest, reply: FastifyReply) {
     const { refreshToken } = request.body as { refreshToken: string }
     
@@ -102,24 +155,23 @@ export class AuthController {
     }
     
     try {
-      // Verify the refresh token from the body, not from header
-      const decoded = await request.server.jwt.verify(refreshToken)
+      // Verify the refresh token
+      const decoded = await request.jwtVerify()
       
       // Generate new access token
-      const token = await reply.jwtSign({
+      const accessToken = await reply.jwtSign({
         id: (decoded as any).id,
         email: (decoded as any).email,
         name: (decoded as any).name,
         role: (decoded as any).role,
       })
       
-      return { accessToken: token }
+      return { accessToken }
     } catch (error) {
       throw new UnauthorizedError('Invalid refresh token')
     }
   }
   
-  // Get current user
   async getCurrentUser(request: FastifyRequest, reply: FastifyReply) {
     const user = request.user as any
     
@@ -127,13 +179,24 @@ export class AuthController {
       throw new UnauthorizedError('Not authenticated')
     }
     
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      createdAt: new Date().toISOString(),
+    // Fetch fresh user data from database
+    const userData = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    })
+    
+    if (!userData) {
+      throw new UnauthorizedError('User not found')
     }
+    
+    return userData
   }
 }
 
