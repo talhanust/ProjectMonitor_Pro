@@ -1,0 +1,320 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+  MANAGER
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// User model - Complete definition with all relations
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  password        String
+  name            String?
+  avatar          String?
+  role            UserRole        @default(USER)
+  isActive        Boolean         @default(true)
+  emailVerified   DateTime?
+  lastLogin       DateTime?
+  
+  // Relations
+  projects        Project[]       @relation("ProjectOwner")
+  projectMembers  ProjectMember[]
+  tasks           Task[]          @relation("TaskAssignee")
+  createdTasks    Task[]          @relation("TaskCreator")
+  comments        Comment[]
+  attachments     Attachment[]
+  documents       Document[]
+  activities      Activity[]
+  notifications   Notification[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+}
+
+// Project model
+model Project {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  code            String          @unique
+  status          ProjectStatus   @default(PLANNING)
+  startDate       DateTime?
+  endDate         DateTime?
+  budget          Decimal?        @db.Money
+  
+  // Relations
+  owner           User            @relation("ProjectOwner", fields: [ownerId], references: [id])
+  ownerId         String
+  members         ProjectMember[]
+  tasks           Task[]
+  milestones      Milestone[]
+  documents       Document[]
+  activities      Activity[]
+  tags            Tag[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([code])
+  @@index([status])
+  @@index([ownerId])
+}
+
+// Project Member junction table
+model ProjectMember {
+  id              String          @id @default(cuid())
+  
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String
+  
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  
+  role            String          @default("member") // member, lead, viewer
+  permissions     Json?           // Custom permissions object
+  joinedAt        DateTime        @default(now())
+  
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+// Task model
+model Task {
+  id              String          @id @default(cuid())
+  title           String
+  description     String?
+  code            String          @unique
+  status          TaskStatus      @default(TODO)
+  priority        TaskPriority    @default(MEDIUM)
+  dueDate         DateTime?
+  estimatedHours  Float?
+  actualHours     Float?
+  
+  // Relations
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String
+  
+  assignee        User?           @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assigneeId      String?
+  
+  creator         User            @relation("TaskCreator", fields: [creatorId], references: [id])
+  creatorId       String
+  
+  milestone       Milestone?      @relation(fields: [milestoneId], references: [id])
+  milestoneId     String?
+  
+  parentTask      Task?           @relation("SubTasks", fields: [parentTaskId], references: [id])
+  parentTaskId    String?
+  subTasks        Task[]          @relation("SubTasks")
+  
+  comments        Comment[]
+  attachments     Attachment[]
+  activities      Activity[]
+  tags            Tag[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  completedAt     DateTime?
+  
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([priority])
+  @@index([code])
+}
+
+// Milestone model
+model Milestone {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  dueDate         DateTime
+  
+  // Relations
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String
+  
+  tasks           Task[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  completedAt     DateTime?
+  
+  @@index([projectId])
+}
+
+// Comment model
+model Comment {
+  id              String          @id @default(cuid())
+  content         String
+  
+  // Relations
+  task            Task            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId          String
+  
+  author          User            @relation(fields: [authorId], references: [id])
+  authorId        String
+  
+  parentComment   Comment?        @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  parentCommentId String?
+  replies         Comment[]       @relation("CommentReplies")
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([taskId])
+  @@index([authorId])
+}
+
+// Document model
+model Document {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  url             String
+  mimeType        String
+  size            Int
+  
+  // Relations
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String
+  
+  uploadedBy      User            @relation(fields: [uploadedById], references: [id])
+  uploadedById    String
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([projectId])
+}
+
+// Attachment model
+model Attachment {
+  id              String          @id @default(cuid())
+  filename        String
+  url             String
+  mimeType        String
+  size            Int
+  
+  // Relations
+  task            Task?           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId          String?
+  
+  uploadedBy      User            @relation(fields: [uploadedById], references: [id])
+  uploadedById    String
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  
+  @@index([taskId])
+}
+
+// Activity/Audit Log model
+model Activity {
+  id              String          @id @default(cuid())
+  action          String          // created, updated, deleted, etc.
+  entityType      String          // project, task, comment, etc.
+  entityId        String
+  metadata        Json?           // Additional data about the action
+  
+  // Relations
+  user            User            @relation(fields: [userId], references: [id])
+  userId          String
+  
+  project         Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId       String?
+  
+  task            Task?           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId          String?
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  
+  @@index([userId])
+  @@index([projectId])
+  @@index([taskId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// Notification model
+model Notification {
+  id              String          @id @default(cuid())
+  type            String          // task_assigned, comment_added, etc.
+  title           String
+  message         String
+  data            Json?           // Additional notification data
+  read            Boolean         @default(false)
+  
+  // Relations
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  readAt          DateTime?
+  
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+// Tag model
+model Tag {
+  id              String          @id @default(cuid())
+  name            String          @unique
+  color           String?
+  
+  // Relations
+  projects        Project[]
+  tasks           Task[]
+  
+  // Timestamps
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([name])
+}
