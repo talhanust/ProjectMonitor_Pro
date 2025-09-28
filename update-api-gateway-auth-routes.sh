@@ -1,24 +1,27 @@
+#!/bin/bash
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}================================================${NC}"
+echo -e "${BLUE}    Updating API Gateway Auth Routes           ${NC}"
+echo -e "${BLUE}================================================${NC}"
+echo ""
+
+cd backend/services/api-gateway
+
+echo -e "${GREEN}Creating updated auth routes...${NC}"
+cat > src/routes/auth.ts << 'AUTHROUTES'
 import { FastifyPluginAsync } from 'fastify'
 import { authController } from '../controllers/authController'
 import { authenticate } from '../middleware/auth'
-import { validateRequest, schemas } from '../middleware/validation'
-import { z } from 'zod'
-
-const loginSchema = z.object({
-  email: schemas.email,
-  password: z.string().min(6),
-})
-
-const registerSchema = z.object({
-  email: schemas.email,
-  password: schemas.password,
-  name: z.string().min(2).max(100),
-})
 
 export const authRoutes: FastifyPluginAsync = async (fastify) => {
   // Public routes
   fastify.post('/register', {
-    preHandler: validateRequest({ body: registerSchema }),
     schema: {
       description: 'Register a new user',
       tags: ['auth'],
@@ -32,10 +35,9 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
         },
       },
     },
-  }, (request, reply) => authController.register(request, reply))
+  }, authController.register)
 
   fastify.post('/login', {
-    preHandler: validateRequest({ body: loginSchema }),
     schema: {
       description: 'Login with email and password',
       tags: ['auth'],
@@ -44,18 +46,18 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
         required: ['email', 'password'],
         properties: {
           email: { type: 'string', format: 'email' },
-          password: { type: 'string', minLength: 6 },
+          password: { type: 'string' },
         },
       },
     },
-  }, (request, reply) => authController.login(request, reply))
+  }, authController.login)
 
   fastify.post('/logout', {
     schema: {
       description: 'Logout user',
       tags: ['auth'],
     },
-  }, (request, reply) => authController.logout(request, reply))
+  }, authController.logout)
 
   fastify.post('/refresh', {
     schema: {
@@ -69,7 +71,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
         },
       },
     },
-  }, (request, reply) => authController.refreshToken(request, reply))
+  }, authController.refreshToken)
 
   // Protected routes
   fastify.get('/me', {
@@ -79,5 +81,13 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
       tags: ['auth'],
       security: [{ bearerAuth: [] }],
     },
-  }, (request, reply) => authController.getCurrentUser(request, reply))
+  }, authController.getCurrentUser)
 }
+AUTHROUTES
+
+echo -e "${GREEN}Authentication routes updated!${NC}"
+echo ""
+echo "Restart your API Gateway to apply changes:"
+echo "  ${BLUE}npm run dev${NC}"
+
+cd ../../..
