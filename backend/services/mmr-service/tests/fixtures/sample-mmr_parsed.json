@@ -1,0 +1,58 @@
+{
+  "projectId": "HC-2024-001",
+  "month": "December",
+  "year": 2024,
+  "reportDate": "2025-10-02T04:54:28.620Z",
+  "summary": {
+    "totalBudget": 0,
+    "actualExpenditure": 0,
+    "physicalProgress": 0,
+    "financialProgress": 0,
+    "variance": 0
+  },
+  "annexures": {
+    "summary": {
+      "projectName": "Highway Construction Project",
+      "projectCode": "HC-2024-001",
+      "reportingPeriod": "December 2024",
+      "preparedBy": "",
+      "checkedBy": "",
+      "approvedBy": ""
+    },
+    "annexureA": {
+      "projectDetails": {
+        "name": "Highway Construction Project",
+        "location": "State Highway 45",
+        "client": "State PWD",
+        "contractValue": 50000000,
+        "startDate": "2024-01-01T00:00:00.000Z",
+        "endDate": "2025-12-31T00:00:00.000Z"
+      },
+      "milestones": [
+        {
+          "id": "M1",
+          "description": "",
+          "plannedDate": "2025-10-02T04:54:28.619Z",
+          "status": "Pending"
+        },
+        {
+          "id": "M2",
+          "description": "",
+          "plannedDate": "2025-10-02T04:54:28.619Z",
+          "status": "Pending"
+        }
+      ]
+    },
+    "annexureB": {
+      "activities": []
+    }
+  },
+  "metadata": {
+    "fileName": "",
+    "uploadedAt": "2025-10-02T04:54:28.620Z",
+    "parsedAt": "2025-10-02T04:54:28.620Z",
+    "parseConfidence": 100,
+    "errors": [],
+    "warnings": []
+  }
+}

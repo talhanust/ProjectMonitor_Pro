@@ -1,0 +1,42 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  fileName     String
+  originalName String
+  mimeType     String
+  size         Int
+  bucket       String
+  key          String   @unique
+  url          String?
+  
+  // Metadata
+  projectId    String?
+  category     String?  // PMMS, MMR, etc.
+  tags         String[] @default([])
+  description  String?
+  
+  // Upload info
+  uploadedBy   String
+  uploadedAt   DateTime @default(now())
+  
+  // Processing status
+  status       String   @default("uploaded") // uploaded, processing, processed, failed
+  processedAt  DateTime?
+  metadata     Json?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([projectId])
+  @@index([category])
+  @@index([uploadedBy])
+  @@map("documents")
+}
