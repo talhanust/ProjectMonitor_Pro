@@ -4,25 +4,25 @@ import { CreateProjectDTO, UpdateProjectDTO } from '../models/project.model';
 const prisma = new PrismaClient();
 
 export class ProjectRepository {
-  async create(data: CreateProjectDTO & { projectId: string, createdBy?: string }) {
+  async create(data: CreateProjectDTO & { projectId: string; createdBy?: string }) {
     return await prisma.project.create({
       data: {
         ...data,
         startDate: data.startDate ? new Date(data.startDate) : undefined,
         endDate: data.endDate ? new Date(data.endDate) : undefined,
-      }
+      },
     });
   }
 
   async findById(id: string) {
     return await prisma.project.findUnique({
-      where: { id }
+      where: { id },
     });
   }
 
   async findByProjectId(projectId: string) {
     return await prisma.project.findUnique({
-      where: { projectId }
+      where: { projectId },
     });
   }
 
@@ -35,13 +35,13 @@ export class ProjectRepository {
         endDate: data.endDate ? new Date(data.endDate) : undefined,
         actualStartDate: data.actualStartDate ? new Date(data.actualStartDate) : undefined,
         actualEndDate: data.actualEndDate ? new Date(data.actualEndDate) : undefined,
-      }
+      },
     });
   }
 
   async delete(id: string) {
     return await prisma.project.delete({
-      where: { id }
+      where: { id },
     });
   }
 
@@ -58,7 +58,7 @@ export class ProjectRepository {
     const skip = (page - 1) * limit;
 
     const where: Prisma.ProjectWhereInput = {};
-    
+
     if (status) where.status = status;
     if (priority) where.priority = priority;
     if (search) {
@@ -74,9 +74,9 @@ export class ProjectRepository {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy]: sortOrder }
+        orderBy: { [sortBy]: sortOrder },
       }),
-      prisma.project.count({ where })
+      prisma.project.count({ where }),
     ]);
 
     return {
@@ -85,8 +85,8 @@ export class ProjectRepository {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -95,18 +95,18 @@ export class ProjectRepository {
       prisma.project.count(),
       prisma.project.groupBy({
         by: ['status'],
-        _count: true
+        _count: true,
       }),
       prisma.project.groupBy({
         by: ['priority'],
-        _count: true
-      })
+        _count: true,
+      }),
     ]);
 
     return {
       total,
       byStatus,
-      byPriority
+      byPriority,
     };
   }
 }

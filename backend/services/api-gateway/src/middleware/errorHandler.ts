@@ -1,19 +1,19 @@
-import { FastifyError, FastifyRequest, FastifyReply } from 'fastify'
-import { ZodError } from 'zod'
-import { config } from '../config'
+import { FastifyError, FastifyRequest, FastifyReply } from 'fastify';
+import { ZodError } from 'zod';
+import { config } from '../config';
 
 export interface ApiError extends Error {
-  statusCode?: number
-  validation?: any
+  statusCode?: number;
+  validation?: any;
 }
 
 export async function errorHandler(
   error: FastifyError | ApiError | ZodError,
   request: FastifyRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   // Log the error
-  request.log.error(error)
+  request.log.error(error);
 
   // Handle Zod validation errors
   if (error instanceof ZodError) {
@@ -22,7 +22,7 @@ export async function errorHandler(
       error: 'Validation Error',
       message: 'Invalid request data',
       validation: error.errors,
-    })
+    });
   }
 
   // Handle JWT errors
@@ -31,7 +31,7 @@ export async function errorHandler(
       statusCode: 401,
       error: 'Unauthorized',
       message: 'Missing authentication token',
-    })
+    });
   }
 
   // Handle rate limit errors
@@ -40,12 +40,12 @@ export async function errorHandler(
       statusCode: 429,
       error: 'Too Many Requests',
       message: 'Rate limit exceeded. Please try again later.',
-    })
+    });
   }
 
   // Handle custom API errors
-  const statusCode = (error as ApiError).statusCode || 500
-  const message = error.message || 'Internal Server Error'
+  const statusCode = (error as ApiError).statusCode || 500;
+  const message = error.message || 'Internal Server Error';
 
   // Don't expose internal errors in production
   if (config.NODE_ENV === 'production' && statusCode === 500) {
@@ -53,7 +53,7 @@ export async function errorHandler(
       statusCode: 500,
       error: 'Internal Server Error',
       message: 'An unexpected error occurred',
-    })
+    });
   }
 
   return reply.status(statusCode).send({
@@ -61,50 +61,53 @@ export async function errorHandler(
     error: error.name || 'Error',
     message,
     ...(config.NODE_ENV !== 'production' && { stack: error.stack }),
-  })
+  });
 }
 
 export class ValidationError extends Error {
-  statusCode = 400
-  
-  constructor(message: string, public validation?: any) {
-    super(message)
-    this.name = 'ValidationError'
+  statusCode = 400;
+
+  constructor(
+    message: string,
+    public validation?: any,
+  ) {
+    super(message);
+    this.name = 'ValidationError';
   }
 }
 
 export class UnauthorizedError extends Error {
-  statusCode = 401
-  
+  statusCode = 401;
+
   constructor(message = 'Unauthorized') {
-    super(message)
-    this.name = 'UnauthorizedError'
+    super(message);
+    this.name = 'UnauthorizedError';
   }
 }
 
 export class ForbiddenError extends Error {
-  statusCode = 403
-  
+  statusCode = 403;
+
   constructor(message = 'Forbidden') {
-    super(message)
-    this.name = 'ForbiddenError'
+    super(message);
+    this.name = 'ForbiddenError';
   }
 }
 
 export class NotFoundError extends Error {
-  statusCode = 404
-  
+  statusCode = 404;
+
   constructor(message = 'Not Found') {
-    super(message)
-    this.name = 'NotFoundError'
+    super(message);
+    this.name = 'NotFoundError';
   }
 }
 
 export class ConflictError extends Error {
-  statusCode = 409
-  
+  statusCode = 409;
+
   constructor(message = 'Conflict') {
-    super(message)
-    this.name = 'ConflictError'
+    super(message);
+    this.name = 'ConflictError';
   }
 }

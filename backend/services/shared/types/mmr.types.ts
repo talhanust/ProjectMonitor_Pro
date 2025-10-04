@@ -4,7 +4,7 @@ export interface MMRData {
   month: string;
   year: number;
   reportDate: Date;
-  
+
   // Summary Data
   summary: {
     totalBudget: number;
@@ -13,7 +13,7 @@ export interface MMRData {
     financialProgress: number;
     variance: number;
   };
-  
+
   // Annexures
   annexures: {
     summary?: AnnexureSummary;
@@ -25,7 +25,7 @@ export interface MMRData {
     annexureF?: AnnexureF; // Materials
     // ... Add more annexures as needed
   };
-  
+
   // Metadata
   metadata: {
     fileName: string;

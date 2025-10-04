@@ -14,10 +14,10 @@ const server = fastify({
       options: {
         translateTime: 'HH:MM:ss Z',
         ignore: 'pid,hostname',
-        colorize: true
-      }
-    }
-  }
+        colorize: true,
+      },
+    },
+  },
 });
 
 async function start() {
@@ -25,19 +25,19 @@ async function start() {
     // Register plugins
     await server.register(cors, {
       origin: true,
-      credentials: true
+      credentials: true,
     });
 
     await server.register(jwt, {
-      secret: process.env.JWT_SECRET || 'your-secret-key'
+      secret: process.env.JWT_SECRET || 'your-secret-key',
     });
 
     // Health check
     server.get('/health', async () => {
-      return { 
-        status: 'ok', 
+      return {
+        status: 'ok',
         service: 'project-service',
-        timestamp: new Date().toISOString() 
+        timestamp: new Date().toISOString(),
       };
     });
 
@@ -47,7 +47,7 @@ async function start() {
     // Start server
     const port = parseInt(process.env.PORT || '8081');
     await server.listen({ port, host: '0.0.0.0' });
-    
+
     server.log.info(`🚀 Project Service running at http://localhost:${port}`);
     server.log.info(`📚 Health check at http://localhost:${port}/health`);
     server.log.info(`📋 Projects API at http://localhost:${port}/api/v1/projects`);

@@ -6,7 +6,7 @@ export class UploadController {
   async uploadSingle(request: FastifyRequest, reply: FastifyReply) {
     try {
       const files = await parseMultipart(request);
-      
+
       if (!files || files.length === 0) {
         return reply.status(400).send({ error: 'No file uploaded' });
       }
@@ -20,14 +20,14 @@ export class UploadController {
         category,
         tags: tags ? tags.split(',') : [],
         description,
-        uploadedBy: userId
+        uploadedBy: userId,
       });
 
       return reply.status(201).send(document);
     } catch (error: any) {
-      return reply.status(500).send({ 
-        error: 'Upload failed', 
-        message: error.message 
+      return reply.status(500).send({
+        error: 'Upload failed',
+        message: error.message,
       });
     }
   }
@@ -35,7 +35,7 @@ export class UploadController {
   async uploadMultiple(request: FastifyRequest, reply: FastifyReply) {
     try {
       const files = await parseMultipart(request);
-      
+
       if (!files || files.length === 0) {
         return reply.status(400).send({ error: 'No files uploaded' });
       }
@@ -44,22 +44,22 @@ export class UploadController {
       const userId = (request as any).user?.id || 'anonymous';
 
       const documents = await Promise.all(
-        files.map(file => 
+        files.map((file) =>
           storageService.uploadFile(file, {
             projectId,
             category,
             tags: tags ? tags.split(',') : [],
             description,
-            uploadedBy: userId
-          })
-        )
+            uploadedBy: userId,
+          }),
+        ),
       );
 
       return reply.status(201).send({ documents });
     } catch (error: any) {
-      return reply.status(500).send({ 
-        error: 'Upload failed', 
-        message: error.message 
+      return reply.status(500).send({
+        error: 'Upload failed',
+        message: error.message,
       });
     }
   }
@@ -73,9 +73,9 @@ export class UploadController {
       if (error.message === 'Document not found') {
         return reply.status(404).send({ error: error.message });
       }
-      return reply.status(500).send({ 
-        error: 'Failed to get document', 
-        message: error.message 
+      return reply.status(500).send({
+        error: 'Failed to get document',
+        message: error.message,
       });
     }
   }
@@ -84,7 +84,7 @@ export class UploadController {
     try {
       const { id } = request.params as { id: string };
       const userId = (request as any).user?.id || 'anonymous';
-      
+
       const result = await storageService.deleteFile(id, userId);
       return reply.send(result);
     } catch (error: any) {
@@ -94,9 +94,9 @@ export class UploadController {
       if (error.message.includes('Unauthorized')) {
         return reply.status(403).send({ error: error.message });
       }
-      return reply.status(500).send({ 
-        error: 'Failed to delete document', 
-        message: error.message 
+      return reply.status(500).send({
+        error: 'Failed to delete document',
+        message: error.message,
       });
     }
   }
@@ -116,14 +116,14 @@ export class UploadController {
         category: query.category,
         uploadedBy: query.uploadedBy,
         page: query.page ? parseInt(query.page) : 1,
-        limit: query.limit ? parseInt(query.limit) : 20
+        limit: query.limit ? parseInt(query.limit) : 20,
       });
 
       return reply.send(documents);
     } catch (error: any) {
-      return reply.status(500).send({ 
-        error: 'Failed to list documents', 
-        message: error.message 
+      return reply.status(500).send({
+        error: 'Failed to list documents',
+        message: error.message,
       });
     }
   }

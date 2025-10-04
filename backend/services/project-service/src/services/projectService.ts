@@ -6,14 +6,14 @@ export class ProjectService {
   async createProject(data: CreateProjectDTO, userId?: string) {
     // Generate unique project ID
     const projectId = await generateProjectId();
-    
+
     // Create project
     const project = await projectRepository.create({
       ...data,
       projectId,
-      createdBy: userId
+      createdBy: userId,
     });
-    
+
     return project;
   }
 
@@ -36,23 +36,23 @@ export class ProjectService {
   async updateProject(id: string, data: UpdateProjectDTO, userId?: string) {
     // Check if project exists
     await this.getProject(id);
-    
+
     // Update project
     const project = await projectRepository.update(id, {
       ...data,
-      updatedBy: userId
+      updatedBy: userId,
     });
-    
+
     return project;
   }
 
   async deleteProject(id: string) {
     // Check if project exists
     await this.getProject(id);
-    
+
     // Delete project
     await projectRepository.delete(id);
-    
+
     return { message: 'Project deleted successfully' };
   }
 

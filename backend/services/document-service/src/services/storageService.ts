@@ -38,15 +38,15 @@ export class StorageService {
     try {
       // Determine file category
       const fileCategory = getFileCategory(file.mimetype);
-      
+
       // Validate file
       if (fileCategory !== 'OTHER') {
         const validation = await validateFile(
-          file.buffer, 
-          file.filename, 
-          fileCategory as 'PDF' | 'EXCEL' | 'IMAGE'
+          file.buffer,
+          file.filename,
+          fileCategory as 'PDF' | 'EXCEL' | 'IMAGE',
         );
-        
+
         if (!validation.valid) {
           throw new Error(validation.error);
         }
@@ -59,18 +59,12 @@ export class StorageService {
       const key = `${options.category || 'general'}/${timestamp}-${uniqueId}${extension}`;
 
       // Upload to MinIO
-      await minioClient.putObject(
-        this.bucketName,
-        key,
-        file.buffer,
-        file.size,
-        {
-          'Content-Type': file.mimetype,
-          'X-Original-Name': file.filename,
-          'X-Uploaded-By': options.uploadedBy,
-          'X-Project-Id': options.projectId || '',
-        }
-      );
+      await minioClient.putObject(this.bucketName, key, file.buffer, file.size, {
+        'Content-Type': file.mimetype,
+        'X-Original-Name': file.filename,
+        'X-Uploaded-By': options.uploadedBy,
+        'X-Project-Id': options.projectId || '',
+      });
 
       // Generate presigned URL (valid for 7 days)
       const url = await getPresignedUrl(this.bucketName, key, 7 * 24 * 60 * 60);
@@ -90,8 +84,8 @@ export class StorageService {
           tags: options.tags || [],
           description: options.description,
           uploadedBy: options.uploadedBy,
-          status: 'uploaded'
-        }
+          status: 'uploaded',
+        },
       });
 
       return document;
@@ -103,7 +97,7 @@ export class StorageService {
 
   async getFile(documentId: string) {
     const document = await prisma.document.findUnique({
-      where: { id: documentId }
+      where: { id: documentId },
     });
 
     if (!document) {
@@ -112,16 +106,16 @@ export class StorageService {
 
     // Generate fresh presigned URL
     const url = await getPresignedUrl(this.bucketName, document.key, 3600);
-    
+
     return {
       ...document,
-      url
+      url,
     };
   }
 
   async deleteFile(documentId: string, userId: string) {
     const document = await prisma.document.findUnique({
-      where: { id: documentId }
+      where: { id: documentId },
     });
 
     if (!document) {
@@ -138,7 +132,7 @@ export class StorageService {
 
     // Delete from database
     await prisma.document.delete({
-      where: { id: documentId }
+      where: { id: documentId },
     });
 
     return { message: 'Document deleted successfully' };
@@ -159,17 +153,17 @@ export class StorageService {
         where: where as any,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
       }),
-      prisma.document.count({ where: where as any })
+      prisma.document.count({ where: where as any }),
     ]);
 
     // Generate fresh URLs for all documents
     const documentsWithUrls = await Promise.all(
       documents.map(async (doc) => ({
         ...doc,
-        url: await getPresignedUrl(this.bucketName, doc.key, 3600)
-      }))
+        url: await getPresignedUrl(this.bucketName, doc.key, 3600),
+      })),
     );
 
     return {
@@ -178,8 +172,8 @@ export class StorageService {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 }

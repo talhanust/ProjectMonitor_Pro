@@ -1,13 +1,13 @@
-import { PrismaClient } from '@prisma/client'
-import * as bcrypt from 'bcryptjs'
+import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...')
+  console.log('🌱 Starting database seed...');
 
   // Create admin user
-  const adminPassword = await bcrypt.hash('Admin123!', 10)
+  const adminPassword = await bcrypt.hash('Admin123!', 10);
   const admin = await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {},
@@ -18,11 +18,11 @@ async function main() {
       role: 'ADMIN',
       emailVerified: new Date(),
     },
-  })
-  console.log('✓ Admin user created')
+  });
+  console.log('✓ Admin user created');
 
   // Create regular users
-  const userPassword = await bcrypt.hash('User123!', 10)
+  const userPassword = await bcrypt.hash('User123!', 10);
   const users = await Promise.all([
     prisma.user.upsert({
       where: { email: 'john.doe@example.com' },
@@ -46,8 +46,8 @@ async function main() {
         emailVerified: new Date(),
       },
     }),
-  ])
-  console.log('✓ Regular users created')
+  ]);
+  console.log('✓ Regular users created');
 
   // Create sample projects
   const project1 = await prisma.project.create({
@@ -66,7 +66,7 @@ async function main() {
         ],
       },
     },
-  })
+  });
 
   const project2 = await prisma.project.create({
     data: {
@@ -82,8 +82,8 @@ async function main() {
         ],
       },
     },
-  })
-  console.log('✓ Sample projects created')
+  });
+  console.log('✓ Sample projects created');
 
   // Create milestones
   const milestone1 = await prisma.milestone.create({
@@ -93,8 +93,8 @@ async function main() {
       dueDate: new Date('2024-02-28'),
       projectId: project1.id,
     },
-  })
-  console.log('✓ Milestones created')
+  });
+  console.log('✓ Milestones created');
 
   // Create sample tasks
   const tasks = await Promise.all([
@@ -140,8 +140,8 @@ async function main() {
         estimatedHours: 24,
       },
     }),
-  ])
-  console.log('✓ Sample tasks created')
+  ]);
+  console.log('✓ Sample tasks created');
 
   // Create comments
   await prisma.comment.create({
@@ -150,8 +150,8 @@ async function main() {
       taskId: tasks[0].id,
       authorId: admin.id,
     },
-  })
-  console.log('✓ Sample comments created')
+  });
+  console.log('✓ Sample comments created');
 
   // Create tags
   const tags = await Promise.all([
@@ -170,8 +170,8 @@ async function main() {
       update: {},
       create: { name: 'backend', color: '#0000FF' },
     }),
-  ])
-  console.log('✓ Tags created')
+  ]);
+  console.log('✓ Tags created');
 
   // Create activities
   await prisma.activity.create({
@@ -183,8 +183,8 @@ async function main() {
       projectId: project1.id,
       metadata: { projectName: project1.name },
     },
-  })
-  console.log('✓ Sample activities created')
+  });
+  console.log('✓ Sample activities created');
 
   // Create notifications
   await prisma.notification.create({
@@ -195,17 +195,17 @@ async function main() {
       userId: users[0].id,
       data: { taskId: tasks[0].id },
     },
-  })
-  console.log('✓ Sample notifications created')
+  });
+  console.log('✓ Sample notifications created');
 
-  console.log('✅ Database seed completed!')
+  console.log('✅ Database seed completed!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seed:', e)
-    process.exit(1)
+    console.error('❌ Error during seed:', e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });

@@ -6,9 +6,7 @@ export const createProjectSchema = Joi.object({
   status: Joi.string()
     .valid('PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED')
     .optional(),
-  priority: Joi.string()
-    .valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')
-    .optional(),
+  priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL').optional(),
   budget: Joi.number().positive().optional(),
   startDate: Joi.date().iso().optional(),
   endDate: Joi.date().iso().greater(Joi.ref('startDate')).optional(),
@@ -18,7 +16,7 @@ export const createProjectSchema = Joi.object({
   projectManager: Joi.string().optional(),
   teamMembers: Joi.array().items(Joi.string()).optional(),
   stakeholders: Joi.array().items(Joi.string()).optional(),
-  tags: Joi.array().items(Joi.string()).optional()
+  tags: Joi.array().items(Joi.string()).optional(),
 });
 
 export const updateProjectSchema = Joi.object({
@@ -27,9 +25,7 @@ export const updateProjectSchema = Joi.object({
   status: Joi.string()
     .valid('PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED')
     .optional(),
-  priority: Joi.string()
-    .valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')
-    .optional(),
+  priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL').optional(),
   budget: Joi.number().positive().optional(),
   startDate: Joi.date().iso().optional(),
   endDate: Joi.date().iso().optional(),
@@ -42,7 +38,7 @@ export const updateProjectSchema = Joi.object({
   projectManager: Joi.string().optional(),
   teamMembers: Joi.array().items(Joi.string()).optional(),
   stakeholders: Joi.array().items(Joi.string()).optional(),
-  tags: Joi.array().items(Joi.string()).optional()
+  tags: Joi.array().items(Joi.string()).optional(),
 }).min(1); // At least one field required for update
 
 export const queryProjectsSchema = Joi.object({
@@ -51,12 +47,10 @@ export const queryProjectsSchema = Joi.object({
   status: Joi.string()
     .valid('PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED')
     .optional(),
-  priority: Joi.string()
-    .valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')
-    .optional(),
+  priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH', 'CRITICAL').optional(),
   search: Joi.string().optional(),
   sortBy: Joi.string()
     .valid('createdAt', 'updatedAt', 'name', 'projectId', 'startDate')
     .default('createdAt'),
-  sortOrder: Joi.string().valid('asc', 'desc').default('desc')
+  sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
 });

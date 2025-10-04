@@ -15,33 +15,33 @@ const server = fastify({
       options: {
         translateTime: 'HH:MM:ss Z',
         ignore: 'pid,hostname',
-        colorize: true
-      }
-    }
-  }
+        colorize: true,
+      },
+    },
+  },
 });
 
 async function start() {
   try {
     await server.register(cors, {
       origin: true,
-      credentials: true
+      credentials: true,
     });
 
     // 🔧 increase file upload size + safety limits
     await server.register(multipart, {
       limits: {
         fileSize: 20 * 1024 * 1024, // 20 MB max file
-        files: 1,                   // allow only 1 file
-        fields: 5                   // small number of extra fields
-      }
+        files: 1, // allow only 1 file
+        fields: 5, // small number of extra fields
+      },
     });
 
     // Health check
     server.get('/health', async () => ({
       status: 'ok',
       service: 'mmr-service',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }));
 
     // Parse MMR endpoint
@@ -74,7 +74,7 @@ async function start() {
       server.log.error(error);
       reply.status(500).send({
         error: 'Internal Server Error',
-        message: error.message
+        message: error.message,
       });
     });
 

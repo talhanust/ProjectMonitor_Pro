@@ -13,7 +13,7 @@ export interface MultipartFile {
 export async function parseMultipart(request: FastifyRequest): Promise<UploadedFile[]> {
   const files: UploadedFile[] = [];
   const parts = (request as any).parts();
-  
+
   for await (const part of parts) {
     if (part.file) {
       const chunks: Buffer[] = [];
@@ -21,25 +21,22 @@ export async function parseMultipart(request: FastifyRequest): Promise<UploadedF
         chunks.push(chunk);
       }
       const buffer = Buffer.concat(chunks);
-      
+
       files.push({
         fieldname: part.fieldname,
         filename: part.filename,
         encoding: part.encoding,
         mimetype: part.mimetype,
         buffer,
-        size: buffer.length
+        size: buffer.length,
       });
     }
   }
-  
+
   return files;
 }
 
-export async function uploadMiddleware(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function uploadMiddleware(request: FastifyRequest, reply: FastifyReply) {
   try {
     const files = await parseMultipart(request);
     (request as any).files = files;
